@@ -1,5 +1,6 @@
 {
   "name": "task-gallery",
+  "homepage": "https://qialex.github.io/task-gallery/",
   "version": "0.1.0",
   "private": false,
   "dependencies": {
