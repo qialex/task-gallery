@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/qialex/task-gallery/static/js/main.e293e917.js",
-    "index.html": "/qialex/task-gallery/index.html",
-    "main.e293e917.js.map": "/qialex/task-gallery/static/js/main.e293e917.js.map"
+    "main.js": "/task-gallery/static/js/main.e293e917.js",
+    "index.html": "/task-gallery/index.html",
+    "main.e293e917.js.map": "/task-gallery/static/js/main.e293e917.js.map"
   },
   "entrypoints": [
     "static/js/main.e293e917.js"
