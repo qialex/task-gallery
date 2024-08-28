@@ -85,7 +85,7 @@ export function ImagesCard (props: {
               color={'inherit'}
               component={Link}
               startIcon={<img
-                src='/unsplash_logo.png'
+                src='./unsplash_logo.png'
                 width={16}
                 height={16}
                 alt='Ansplash logo' />}

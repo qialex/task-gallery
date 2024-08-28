@@ -115,7 +115,7 @@ export default function SingleImagePage() {
                       <Link component={ReactRouterLink} to={image?.url || ''}>
                         <Avatar variant="square">
                           <img
-                            src='../unsplash_logo.png'
+                            src='./unsplash_logo.png'
                             width={32}
                             height={32}
                             alt='Ansplash logo' 
