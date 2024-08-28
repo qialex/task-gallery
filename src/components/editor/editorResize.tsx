@@ -9,13 +9,13 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { parseNumValue } from '../../utils';
 import { ResizeProps } from '../../types';
 import { EDITOR_SIZE_MAX_PERCENT, EDITOR_SIZE_MAX_PX, EDITOR_SIZE_MIN_PERCENT, EDITOR_SIZE_MIN_PX, EditorChangeType, resizePropsInitial } from '../../constants';
-import { setEditorChange } from '../../slices/imageSlice';
+import { addEditorChange } from '../../slices/imageSlice';
 
 export default function EditorResize(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
-  const historyProps = (editorItem?.history || []).filter(h => h.type === EditorChangeType.resize).reverse()[0]?.props as ResizeProps
+  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.resize).reverse()[0]?.props as ResizeProps
 
   const image  = editorItem?.image;
   const [form, setForm] = React.useState<ResizeProps>(
@@ -84,12 +84,17 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
   // handle submit
   const handleSubmit = () => {
     if (editorItem) {
+      form.wAbs = form.isPercentage ? Math.round((image?.width  || 0) * parseInt(form.w) / 100) : parseInt(form.w);
+      form.hAbs = form.isPercentage ? Math.round((image?.height || 0) * parseInt(form.h) / 100) : parseInt(form.h);
+      
       dispatch(
-        setEditorChange({
+        addEditorChange({
           editorItem: editorItem, 
-          historyItem: {
+          editorAction: {
             type: EditorChangeType.resize, 
             props: {...form},
+            url: '',
+            active: true,
           },
         },),
       );
@@ -192,15 +197,6 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
               />
           </Stack>  
         </Stack>
-
-        {/* <Stack sx={{mt: 4}}>
-          <Stack direction={'row'} alignItems={'center'}>
-            Width {image?.width} <ArrowRightAltIcon /> {form.w}
-          </Stack>
-          <Stack direction={'row'} alignItems={'center'}>
-            Height {image?.height} <ArrowRightAltIcon /> {form.h}
-          </Stack>
-        </Stack> */}
       </Stack>
       <Divider sx={{mt: 4}} />
       <Stack direction={'row'} justifyContent={'end'} spacing={1} mt={3}>

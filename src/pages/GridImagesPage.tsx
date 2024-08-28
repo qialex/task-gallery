@@ -1,25 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Button, Grid, Stack } from "@mui/material";
-
-// import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { RootState } from "../store";
-import { getImages } from "../slices/imageSlice";
+import { getImages, selectGridPageData } from "../slices/imageSlice";
 import { ImageStoreItem } from "../types";
 import { ImageApiStatus, RequestPhase } from "../constants";
-import { getStartEndIndex } from "../utils";
 import CachedIcon from '@mui/icons-material/Cached';
 import NotFound from "./NotFound";
 import { ImagesCard } from "../components/image/ImageCard";
 import PageLoading from "../components/loading";
 
 export default function GridImagesPage () {
-  const { items, status } = useAppSelector((state: RootState) => {
-    const { start, end } = getStartEndIndex(state.images.pagination)
-    return {items: state.images.items.filter(item => item.index >= start && item.index < end), status: state.images.status}
-  });
+  const selectGridPageDataMemo = useMemo(() => selectGridPageData, [])
+  const { items, status } = useAppSelector(selectGridPageDataMemo)
   const dispatch = useAppDispatch();
-  // console.log(items)
 
   useEffect(() => {
     dispatch(getImages())
@@ -57,8 +50,8 @@ export default function GridImagesPage () {
       <Grid container spacing={2}>
         {items.map((item: ImageStoreItem, i: number) => 
           {
-            return <Grid item key={i.toString()} xs={12} sm={6} md={4} lg={3} xl={2}>
-              {ImageApiStatus.loaded === item.status ? <ImagesCard item={item} /> : ''}
+            return <Grid item key={(item.image?.id || '').toString() + i.toString()} xs={12} sm={6} md={4} lg={3} xl={2}>
+              {ImageApiStatus.loaded === item.status ? <ImagesCard item={item} enableHeaderLinks={true} enableBottomActions={true} /> : ''}
             </Grid>;
           }
         )}

@@ -6,13 +6,13 @@ import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { RootState } from '../../store';
 import { GreyscaleProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { setEditorChange } from '../../slices/imageSlice';
+import { addEditorChange } from '../../slices/imageSlice';
 
 export default function EditorGreyscale(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
-  const historyProps = (editorItem?.history || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps
+  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps
   const [grayscale, setGrayscale] = React.useState<boolean>(historyProps?.isGreyscale || false);
 
   const handleCheckboxChange = (): void => {
@@ -26,18 +26,19 @@ export default function EditorGreyscale(props: {id: number, onClose: () => void}
   const handleSubmit = () => {
     if (editorItem) {
       dispatch(
-        setEditorChange({
+        addEditorChange({
           editorItem: editorItem, 
-          historyItem: {
+          editorAction: {
             type: EditorChangeType.greyscale, 
             props: { isGreyscale: grayscale },
+            url: '',
+            active: true,
           },
         },),
       );
       props.onClose()
     }
   }
-
 
   return (
     <Stack p={2}>

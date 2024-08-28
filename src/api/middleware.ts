@@ -14,8 +14,7 @@ export const axiosMiddleware: Middleware =
           dispatch(
             showNotification({
               type: NotificationType.Error,
-              message: 'CUSTOM ERROR MESSAGE'
-              // message: errorMessage,
+              message: errorMessage,
             })
           );
         } else if (action.type.endsWith("/fulfilled")) {

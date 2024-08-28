@@ -53,12 +53,12 @@ export default function PageInput () {
   return (
     <TextField 
       size="small"
-      sx={{width: '64px'}}
+      sx={{width: {xs: '64px', sm: '72px', textAlign: 'center'}}}
       value={value}
       onChange={handleChange}
       onKeyUp={handleKeyUp}
       onBlur={handleBlur}
-      label="Page" 
+      // label="Page" 
       variant="outlined"
     />
   );

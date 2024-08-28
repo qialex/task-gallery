@@ -32,13 +32,16 @@ export interface ImageStoreItem {
   status: ImageApiStatus,
 }
 
-export interface EditorHistoryItem {
+export interface EditorAction {
   type: EditorChangeType,
   props: ResizeProps|GreyscaleProps|BlurProps,
+  url: string,
+  active: boolean,
 }
 
 export interface ImageEditorStoreItem extends Omit<ImageStoreItem, 'index'> {
-  history: EditorHistoryItem[],
+  editorActions: EditorAction[],
+  url: string,
 }
 
 export interface ResizeProps {
@@ -46,6 +49,8 @@ export interface ResizeProps {
   isAspect: boolean,
   w: string,
   h: string,
+  wAbs: number,
+  hAbs: number,
 }
 
 export interface GreyscaleProps {

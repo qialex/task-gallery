@@ -6,14 +6,14 @@ import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { RootState } from '../../store';
 import { BlurProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { setEditorChange } from '../../slices/imageSlice';
+import { addEditorChange } from '../../slices/imageSlice';
 import BlurLinearIcon from '@mui/icons-material/BlurLinear';
 
 export default function EditorBlur(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
-  const historyProps = (editorItem?.history || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps
+  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps
   const [blur, setBlur] = React.useState<number>(historyProps?.blur || 0);
 
   const handleBlur = (e: Event) => {
@@ -27,11 +27,13 @@ export default function EditorBlur(props: {id: number, onClose: () => void}) {
   const handleSubmit = () => {
     if (editorItem) {
       dispatch(
-        setEditorChange({
+        addEditorChange({
           editorItem: editorItem, 
-          historyItem: {
+          editorAction: {
             type: EditorChangeType.blur, 
             props: { blur },
+            url: '',
+            active: true,
           },
         },),
       );

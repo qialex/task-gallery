@@ -38,6 +38,8 @@ export const resizePropsInitial: ResizeProps = {
   isAspect: false,
   w: '',
   h: '',
+  wAbs: 0,
+  hAbs: 0,
 }
 
 export const EDITOR_SIZE_MAX_PERCENT = 200
@@ -51,4 +53,10 @@ export enum EditorChangeType {
   resize = 'resize',
   greyscale = 'greyscale',
   blur = 'blur',
+}
+
+export const editorChangeTypeTitles = {
+  [EditorChangeType.greyscale]: 'Greyscale',
+  [EditorChangeType.blur]: 'Blur',
+  [EditorChangeType.resize]: 'Resize',
 }

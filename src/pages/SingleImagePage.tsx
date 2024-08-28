@@ -1,26 +1,26 @@
-import PageHeader from "../components/headers/PageHeader";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getImage } from "../slices/imageSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { Stack, Typography, Drawer, Divider, List, ListItemButton, ListItemIcon, ListItemText, Grid } from "@mui/material";
-import { BlurProps, GreyscaleProps, ImageItem, ResizeProps } from "../types";
+import { Stack, Drawer, Divider, List, ListItemButton, ListItemIcon, ListItemText, Grid } from "@mui/material";
+import { ImageItem, ImageStoreItem } from "../types";
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import EditorResize from "../components/editor/editorResize";
 import NotFound from "./NotFound";
 import PageLoading from "../components/loading";
-import { EditorChangeType, RequestPhase } from "../constants";
+import { RequestPhase } from "../constants";
 import { Link as ReactRouterLink } from 'react-router-dom';
 import DownloadIcon from '@mui/icons-material/Download';
 import ReplyIcon from '@mui/icons-material/Reply';
-import PaletteIcon from '@mui/icons-material/Palette';
-import BlurLinearIcon from '@mui/icons-material/BlurLinear';
-// import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import EditorGreyscale from "../components/editor/editorGreyscale";
 import EditorBlur from "../components/editor/editorBlur";
 import { downloadURI } from "../utils";
 import { ImagesCanvas } from "../components/image/ImageCanvas";
-
+import FilterBAndWIcon from '@mui/icons-material/FilterBAndW';
+import FilterTiltShiftIcon from '@mui/icons-material/FilterTiltShift';
+import EditorHistory from "../components/editor/editorHistory";
+import { ImagesCard } from "../components/image/ImageCard";
 
 export default function SingleImagePage() {
   const { id } = useParams();
@@ -29,14 +29,12 @@ export default function SingleImagePage() {
     const editorItem = state.images.editorItems.find(item => item?.image?.id === parseInt(id || ''))
     return {editorItem, status: state.images.status, pagination: state.images.pagination}
   });
-  const blur = ((editorItem?.history || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps)?.blur || 0
-  const greyscale = ((editorItem?.history || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps)?.isGreyscale || false
-  const resize: ResizeProps|undefined = ((editorItem?.history || []).filter(h => h.type === EditorChangeType.resize).reverse()[0]?.props as ResizeProps) || undefined
 
   const image = editorItem?.image as ImageItem
   const [isResizeForm, setIsResizeForm] = useState<boolean>(false)
   const [isGreyscalseForm, setIsGreyscalseForm] = useState<boolean>(false)
   const [isBlurForm, setIsBlurForm] = useState<boolean>(false)
+  const [isHistoryForm, setIsHistoryForm] = useState<boolean>(false)
 
   // const [imgUrl, setImgUrl] = useState<string>(image ? getURL(image.downloadUrl, blur, greyscale) : '')
 
@@ -45,12 +43,6 @@ export default function SingleImagePage() {
       dispatch(getImage(parseInt(id)));
     }
   }, [id, dispatch]);
-
-  // useEffect(() => {
-  //   if (image) {
-  //     setImgUrl(getURL(image.downloadUrl, blur, greyscale))
-  //   }
-  // }, [blur, greyscale, image]);
 
   const getBackUrl = (): string => {
     const urlHost = new URL (window.location.origin)    
@@ -67,15 +59,16 @@ export default function SingleImagePage() {
     setIsGreyscalseForm(false)
     setIsResizeForm(false)
     setIsBlurForm(false)
+    setIsHistoryForm(false)
   }
 
-  const imgUrl = ''
+  const imgUrl = editorItem?.url || image?.url || ''
 
   return (
     <>
       {/* Resize form */}
       <Drawer 
-        open={(isResizeForm || isGreyscalseForm || isBlurForm)} 
+        open={(isResizeForm || isGreyscalseForm || isBlurForm || isHistoryForm)} 
         onClose={handleDrawerClose}
       >
         <Stack sx={{width: {xs: '250px', md: '300px'}}}>
@@ -88,19 +81,48 @@ export default function SingleImagePage() {
           {image && isBlurForm ? 
             <EditorBlur id={image.id} onClose={() => setIsBlurForm(false) } />
           : ''}
+          {image && isHistoryForm ? 
+            <EditorHistory id={image.id} onClose={() => setIsHistoryForm(false) } />
+          : ''}
         </Stack>
       </Drawer>              
       {/* <EditorCrop /> */}
 
       <Grid container>
-        <Grid item xs={2} sm={2} md={2} lg={2} xl={1}>
+        <Grid item xs={2} sm={2} md={2} lg={2} xl={2}>
+
+          
+          <Stack sx={{mt: 2}}>
+            {editorItem ? 
+              <ImagesCard
+                item={{...editorItem, index: 0} as ImageStoreItem}
+                hideImage={true}
+              />
+            : ''}
+          </Stack>
+
           <List>
+            <ListItemButton component={ReactRouterLink} to={image?.url || ''}>
+              <ListItemIcon>
+                <img
+                src='../unsplash_logo.png'
+                width={16}
+                height={16}
+                alt='Ansplash logo' 
+              />
+              </ListItemIcon>
+              <ListItemText primary="see on unsplash.com" sx={{display: {xs: 'none', lg: 'block'}}} />
+            </ListItemButton>
+
             <ListItemButton component={ReactRouterLink} to={backUrl}>
               <ListItemIcon>
                 <ReplyIcon />
               </ListItemIcon>
               <ListItemText primary="Back to gallery" sx={{display: {xs: 'none', lg: 'block'}}} />
             </ListItemButton>
+            
+
+
 
             <ListItemButton onClick={() => downloadURI(imgUrl, image.id.toString())}>
               <ListItemIcon>
@@ -109,14 +131,16 @@ export default function SingleImagePage() {
               <ListItemText primary="Download" sx={{display: {xs: 'none', lg: 'block'}}} />
             </ListItemButton>
 
-            <Divider />
+            <Divider 
+              // sx={{maxWidth: {xs: '100%', lg: '50%'}}}
+            />
 
-            {/* <ListItemButton onClick={() => {}}>
+            <ListItemButton onClick={() => setIsHistoryForm(!isHistoryForm)}>
               <ListItemIcon>
                 <FormatListNumberedIcon />
               </ListItemIcon>
               <ListItemText primary="History" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton> */}
+            </ListItemButton>
 
             <ListItemButton onClick={() => setIsResizeForm(!isResizeForm)}>
               <ListItemIcon>
@@ -127,42 +151,32 @@ export default function SingleImagePage() {
 
             <ListItemButton onClick={() => setIsGreyscalseForm(!isGreyscalseForm)}>
               <ListItemIcon>
-                <PaletteIcon />
+                <FilterBAndWIcon />
               </ListItemIcon>
               <ListItemText primary="Greyscale" sx={{display: {xs: 'none', lg: 'block'}}} />
             </ListItemButton>
 
             <ListItemButton onClick={() => setIsBlurForm(!isBlurForm)}>
               <ListItemIcon>
-                <BlurLinearIcon />
+                <FilterTiltShiftIcon />
               </ListItemIcon>
               <ListItemText primary="Blur" sx={{display: {xs: 'none', lg: 'block'}}} />
             </ListItemButton>
+
+
           </List>
         </Grid>
-        <Grid item xs={10} sm={10} md={10} lg={10} xl={11}>
+        <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
         {image ? <>
 
           {/* <Stack direction={'row'}> */}
             <Stack justifyContent={'center'} alignItems={'center'} sx={{padding: 6}}>
               <Stack sx={{maxWidth: '40vw', maxHeight: '40vh'}}>
-                {/* <img 
-                  crossOrigin='anonymous'
-                  src={imgUrl} 
-                  alt={image.author} 
-                  style={{maxWidth: '40vw', maxHeight: '40vh'}} 
-                  onLoad={onloadImage}
-                /> */}
                 <ImagesCanvas 
                   id={image.id}
                   showEdited={true}
                 />                  
               </Stack>
-              <PageHeader title="Image" />
-              <Typography variant="h5">ID: {image.id}</Typography>
-              <Typography variant="h5">Author: {image.author}</Typography>
-              <Typography variant="h5">Width: {image.width}</Typography>
-              <Typography variant="h5">Height: {image.height}</Typography>
             </Stack>
           {/* </Stack> */}
         </> : status === RequestPhase.failed ? <>
