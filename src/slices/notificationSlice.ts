@@ -30,6 +30,11 @@ const notificationSlice = createSlice({
       state.message = action.payload.message;
       state.type = action.payload.type;
     },
+    showNotificationNoChanges: (state) => {
+      state.open = true;
+      state.message = 'Nothing changed';
+      state.type = NotificationType.Warning;
+    },
     hideNotification: (state) => {
       state.open = false;
       state.message = "";
@@ -37,5 +42,5 @@ const notificationSlice = createSlice({
   },
 });
 
-export const { showNotification, hideNotification } = notificationSlice.actions;
+export const { showNotification, hideNotification, showNotificationNoChanges } = notificationSlice.actions;
 export default notificationSlice.reducer;

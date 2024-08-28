@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getImage } from "../slices/imageSlice";
+import { useEffect, useMemo, useState } from "react";
+import { getEditorItemsById, getImage, selectImagesApiStatusForMemo, selectPagination } from "../slices/imageSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { Stack, Drawer, Divider, List, ListItemButton, ListItemIcon, ListItemText, Grid } from "@mui/material";
+import { Stack, Drawer, Grid, Card, CardContent, Avatar, Box, Typography, Link } from "@mui/material";
 import { ImageItem, ImageStoreItem } from "../types";
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import EditorResize from "../components/editor/editorResize";
@@ -25,18 +25,21 @@ import { ImagesCard } from "../components/image/ImageCard";
 export default function SingleImagePage() {
   const { id } = useParams();
   const dispatch = useAppDispatch();
-  const { editorItem, status, pagination } = useAppSelector((state) => {
-    const editorItem = state.images.editorItems.find(item => item?.image?.id === parseInt(id || ''))
-    return {editorItem, status: state.images.status, pagination: state.images.pagination}
-  });
+  // api status
+  const selectImagesApiStatusMemo = useMemo(() => selectImagesApiStatusForMemo(), [])
+  const status = useAppSelector(selectImagesApiStatusMemo);
+  // pagination
+  const selectPaginationMemo = useMemo(() => selectPagination(), [])
+  const pagination = useAppSelector(selectPaginationMemo)
+  // editor item
+  const getEditorItemsByIdMemo = useMemo(() => getEditorItemsById(parseInt(id || '')), [id])
+  const editorItem = useAppSelector(getEditorItemsByIdMemo)
 
   const image = editorItem?.image as ImageItem
   const [isResizeForm, setIsResizeForm] = useState<boolean>(false)
   const [isGreyscalseForm, setIsGreyscalseForm] = useState<boolean>(false)
   const [isBlurForm, setIsBlurForm] = useState<boolean>(false)
   const [isHistoryForm, setIsHistoryForm] = useState<boolean>(false)
-
-  // const [imgUrl, setImgUrl] = useState<string>(image ? getURL(image.downloadUrl, blur, greyscale) : '')
 
   useEffect(() => {
     if (id) {
@@ -95,83 +98,121 @@ export default function SingleImagePage() {
           <Stack sx={{mt: 2}}>
             {editorItem ? 
               <ImagesCard
+                size={editorItem?.size}
                 item={{...editorItem, index: 0} as ImageStoreItem}
                 hideImage={true}
               />
             : ''}
           </Stack>
 
-          <List>
-            <ListItemButton component={ReactRouterLink} to={image?.url || ''}>
-              <ListItemIcon>
-                <img
-                src='../unsplash_logo.png'
-                width={16}
-                height={16}
-                alt='Ansplash logo' 
-              />
-              </ListItemIcon>
-              <ListItemText primary="see on unsplash.com" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
 
-            <ListItemButton component={ReactRouterLink} to={backUrl}>
-              <ListItemIcon>
-                <ReplyIcon />
-              </ListItemIcon>
-              <ListItemText primary="Back to gallery" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
-            
+          <Stack sx={{mt: 2}}>
+            <Card>
+              <CardContent>
+                <Grid component='div' container spacing={2}>
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Link component={ReactRouterLink} to={image?.url || ''}>
+                        <Avatar variant="square">
+                          <img
+                            src='../unsplash_logo.png'
+                            width={32}
+                            height={32}
+                            alt='Ansplash logo' 
+                          />
+                        </Avatar>
+                      </Link>
+                      <Box sx={{overflow: 'hidden'}}>
+                        <Link component={ReactRouterLink} to={image?.url || ''} sx={{overflow: 'hidden'}}>
+                          <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>See on unsplash.com</Typography>
+                        </Link>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Link component={ReactRouterLink} to={backUrl}>
+                        <Avatar>
+                          <ReplyIcon />
+                        </Avatar>
+                      </Link>
+                      <Box sx={{overflow: 'hidden'}}>
+                        <Link component={ReactRouterLink} to={backUrl} sx={{overflow: 'hidden'}}>
+                          <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Back to gallery</Typography>
+                        </Link>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
-
-            <ListItemButton onClick={() => downloadURI(imgUrl, image.id.toString())}>
-              <ListItemIcon>
-                <DownloadIcon />
-              </ListItemIcon>
-              <ListItemText primary="Download" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
-
-            <Divider 
-              // sx={{maxWidth: {xs: '100%', lg: '50%'}}}
-            />
-
-            <ListItemButton onClick={() => setIsHistoryForm(!isHistoryForm)}>
-              <ListItemIcon>
-                <FormatListNumberedIcon />
-              </ListItemIcon>
-              <ListItemText primary="History" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
-
-            <ListItemButton onClick={() => setIsResizeForm(!isResizeForm)}>
-              <ListItemIcon>
-                <AspectRatioIcon />
-              </ListItemIcon>
-              <ListItemText primary="Resize" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
-
-            <ListItemButton onClick={() => setIsGreyscalseForm(!isGreyscalseForm)}>
-              <ListItemIcon>
-                <FilterBAndWIcon />
-              </ListItemIcon>
-              <ListItemText primary="Greyscale" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
-
-            <ListItemButton onClick={() => setIsBlurForm(!isBlurForm)}>
-              <ListItemIcon>
-                <FilterTiltShiftIcon />
-              </ListItemIcon>
-              <ListItemText primary="Blur" sx={{display: {xs: 'none', lg: 'block'}}} />
-            </ListItemButton>
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Avatar onClick={() => downloadURI(imgUrl, image.id.toString())}>
+                        <DownloadIcon />
+                      </Avatar>
+                      <Box onClick={() => downloadURI(imgUrl, image.id.toString())} sx={{overflow: 'hidden'}}>
+                        <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Download</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
 
-          </List>
+                  {/* <Divider/> */}
+
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Avatar onClick={() => setIsHistoryForm(!isHistoryForm)}>
+                        <FormatListNumberedIcon />
+                      </Avatar>
+                      <Box onClick={() => setIsHistoryForm(!isHistoryForm)} sx={{overflow: 'hidden'}}>
+                        <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>History</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Avatar onClick={() => setIsResizeForm(!isResizeForm)}>
+                        <AspectRatioIcon />
+                      </Avatar>
+                      <Box onClick={() => setIsResizeForm(!isResizeForm)} sx={{overflow: 'hidden'}}>
+                        <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Resize</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Avatar onClick={() => setIsGreyscalseForm(!isGreyscalseForm)}>
+                        <FilterBAndWIcon />
+                      </Avatar>
+                      <Box onClick={() => setIsGreyscalseForm(!isGreyscalseForm)} sx={{overflow: 'hidden'}}>
+                        <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Greyscale</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Avatar onClick={() => setIsBlurForm(!isBlurForm)}>
+                        <FilterTiltShiftIcon />
+                      </Avatar>
+                      <Box onClick={() => setIsBlurForm(!isBlurForm)} sx={{overflow: 'hidden'}}>
+                        <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Blur</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Stack>
         </Grid>
         <Grid item xs={10} sm={10} md={10} lg={10} xl={10}>
         {image ? <>
 
           {/* <Stack direction={'row'}> */}
-            <Stack justifyContent={'center'} alignItems={'center'} sx={{padding: 6}}>
-              <Stack sx={{maxWidth: '40vw', maxHeight: '40vh'}}>
+            <Stack justifyContent={'center'} alignItems={'center'} sx={{padding: {xs: 1, md: 3, lg: 6}, paddingTop: {xs: 1, md: 4, lg: 9, xl: 12}}}>
+              <Stack sx={{maxWidth: {xs: '100%', md: '70vw', lg: '40vw'}, maxHeight: {xs: '100%', md: '70vh', lg: '40vh'}}}>
                 <ImagesCanvas 
                   id={image.id}
                   showEdited={true}
@@ -184,7 +225,7 @@ export default function SingleImagePage() {
         </> : ''}
         </Grid>
       </Grid>
-
+      {/* Page loading */}
       <PageLoading />
     </>
   );

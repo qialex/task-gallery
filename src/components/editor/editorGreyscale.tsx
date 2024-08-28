@@ -3,15 +3,18 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Checkbox, Divider, FormControl, FormControlLabel, FormGroup, Stack } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
-import { RootState } from '../../store';
 import { GreyscaleProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { addEditorChange } from '../../slices/imageSlice';
+import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
+import { showNotificationNoChanges } from '../../slices/notificationSlice';
 
 export default function EditorGreyscale(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
-  const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
+  // editor item
+  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
+  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  // history props
   const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps
   const [grayscale, setGrayscale] = React.useState<boolean>(historyProps?.isGreyscale || false);
 
@@ -25,6 +28,10 @@ export default function EditorGreyscale(props: {id: number, onClose: () => void}
 
   const handleSubmit = () => {
     if (editorItem) {
+      if ((!historyProps?.isGreyscale && !grayscale) || (!!historyProps?.isGreyscale === grayscale)) {
+        dispatch(showNotificationNoChanges());
+        return 
+      }
       dispatch(
         addEditorChange({
           editorItem: editorItem, 

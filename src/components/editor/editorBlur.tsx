@@ -3,16 +3,19 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Divider, Slider, Stack } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
-import { RootState } from '../../store';
 import { BlurProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { addEditorChange } from '../../slices/imageSlice';
+import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
 import BlurLinearIcon from '@mui/icons-material/BlurLinear';
+import { showNotificationNoChanges } from '../../slices/notificationSlice';
 
 export default function EditorBlur(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
-  const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
+  // editor item
+  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
+  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  // history props
   const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps
   const [blur, setBlur] = React.useState<number>(historyProps?.blur || 0);
 
@@ -26,6 +29,10 @@ export default function EditorBlur(props: {id: number, onClose: () => void}) {
 
   const handleSubmit = () => {
     if (editorItem) {
+      if ((!historyProps?.blur && !blur) || ((historyProps?.blur || 0) === blur)) {
+        dispatch(showNotificationNoChanges());
+        return 
+      }
       dispatch(
         addEditorChange({
           editorItem: editorItem, 

@@ -42,6 +42,10 @@ export interface EditorAction {
 export interface ImageEditorStoreItem extends Omit<ImageStoreItem, 'index'> {
   editorActions: EditorAction[],
   url: string,
+  size: {
+    width: number,
+    height: number,
+  },
 }
 
 export interface ResizeProps {

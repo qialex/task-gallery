@@ -2,17 +2,20 @@ import Grid from "@mui/material/Grid";
 import { AppBar, Button, Container, IconButton, Toolbar } from "@mui/material";
 import LimitSelect from "../pagination/LimitSelect";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { RootState } from "../../store";
-import { setPagination } from "../../slices/imageSlice";
+import { isFirstPageSelector, setPagination } from "../../slices/imageSlice";
 import { PaginationChangeType } from "../../constants";
 import PageInput from "../pagination/pageInput";
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { useMemo } from "react";
 
 export default function NavPagination () {
   const dispatch = useAppDispatch();
-  const isFirstPage = useAppSelector((state: RootState) => state.images.pagination.page === 1);
+
+  // pagination
+  const isFirstPageSelectorMemo = useMemo(() => isFirstPageSelector(), [])
+  const isFirstPage = useAppSelector(isFirstPageSelectorMemo);
 
   // handle chaning the items per page
   const handlePageClick = (type: PaginationChangeType) => {

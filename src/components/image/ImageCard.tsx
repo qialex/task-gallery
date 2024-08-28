@@ -8,11 +8,13 @@ import { ImagesCanvas } from "./ImageCanvas";
 
 export function ImagesCard (props: {
   item: ImageStoreItem, 
+  size?: {width: number, height: number}, 
   hideImage?: boolean, 
   enableHeaderLinks?: boolean,
   enableBottomActions?: boolean,
+  elevation?: number,
 }) {
-  const { item, hideImage, enableHeaderLinks, enableBottomActions } = props;
+  const { item, hideImage, enableHeaderLinks, enableBottomActions, size, elevation } = props;
   const image = item.image as ImageItem
 
   // download image
@@ -21,7 +23,7 @@ export function ImagesCard (props: {
   }
 
   return (
-    <Card>
+    <Card elevation={typeof elevation === 'number' ? elevation : 1}>
       {item.image ? <>
         <CardHeader
           sx={{
@@ -56,7 +58,7 @@ export function ImagesCard (props: {
             color={'inherit'}
             sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}
           >
-            ID: {image.id}. Resolution: {image.width}x{image.height}
+            ID: {image.id}. Resolution: {size ? size.width : image.width}x{size ? size.height : image.height}
           </Link>} 
         />
 

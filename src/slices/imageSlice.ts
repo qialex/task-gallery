@@ -174,7 +174,6 @@ export const setPagination = createAsyncThunk(
 export const addEditorChange =  createAsyncThunk<{editorAction: EditorAction, editorItem: ImageEditorStoreItem }, any, { rejectValue: {id: number|undefined, error: string} }>(
   "images/addEditoAction",
   async (payload: {editorAction: EditorAction, editorItem: ImageEditorStoreItem}, { rejectWithValue }) => {
-    
     const editorActions = payload.editorItem.editorActions.filter(a => a.active)
 
     const blur = payload.editorAction.type === EditorChangeType.blur ? 
@@ -264,17 +263,29 @@ export const imageSlice = createSlice({
           const item = state.items.find((item: ImageStoreItem) => item.image?.id === action.payload.id)
           const editorItem = state.editorItems.find((item: ImageEditorStoreItem) => item.image?.id === action.payload.id)
           if (!action.payload && !item && !editorItem) {
-            state.editorItems.push({status: ImageApiStatus.error, image: undefined, editorActions: [], url: ''})
+            state.editorItems.push({status: ImageApiStatus.error, image: undefined, editorActions: [], url: '', size: {width: 0, height: 0}})
           }
           if (!action.payload && item && !editorItem) {
-            state.editorItems.push({status: item.status, image: item.image, editorActions: [], url: item.image?.downloadUrl || ''})
+            state.editorItems.push({
+              status: item.status,
+              image: item.image, 
+              editorActions: [], 
+              url: item.image?.downloadUrl || '', 
+              size: {width: item.image?.width || 0, height: item.image?.height || 0},
+            })
           }
           if (editorItem && editorItem.status !== ImageApiStatus.loaded && action.payload) {
             const editorItemIndex = state.editorItems.findIndex((item: ImageEditorStoreItem) => item.image?.id === action.payload.id)
             state.editorItems[editorItemIndex] = {...state.editorItems[editorItemIndex], status: ImageApiStatus.loaded}
           }
           if (action.payload && !editorItem) {
-            state.editorItems.push({status: ImageApiStatus.loaded, image: action.payload, editorActions: [], url: action.payload?.downloadUrl || ''})
+            state.editorItems.push({
+              status: ImageApiStatus.loaded, 
+              image: action.payload, 
+              editorActions: [], 
+              url: action.payload?.downloadUrl || '',
+              size: {width: action.payload?.width || 0, height: action.payload?.height || 0}
+            })
           }
           state.status = RequestPhase.idle;
         }
@@ -284,10 +295,22 @@ export const imageSlice = createSlice({
         const item = state.items.find((item: ImageStoreItem) => item.image?.id === action.payload)
         const editorItem = state.editorItems.find((item: ImageEditorStoreItem) => item.image?.id === action.payload)
         if (!item && !editorItem) {
-          state.editorItems.push({status: ImageApiStatus.error, image: undefined, editorActions: [], url: ''})
+          state.editorItems.push({
+            status: ImageApiStatus.error,
+            image: undefined,
+            editorActions: [],
+            url: '',
+            size: {width: 0, height: 0},
+          })
         }
         if (item && !editorItem) {
-          state.editorItems.push({status: item.status, image: item.image, editorActions: [], url: item.image?.downloadUrl || ''})
+          state.editorItems.push({
+            status: item.status,
+            image: item.image,
+            editorActions: [],
+            url: item.image?.downloadUrl || '',
+            size: {width: item.image?.width || 0, height: item.image?.height || 0}
+          })
         }
         
         state.error = action.error.message || "Failed to fetch images.";
@@ -302,34 +325,38 @@ export const imageSlice = createSlice({
         if (item) {
           item.editorActions = [...item.editorActions.filter(a => a.active), action.payload.editorAction]
           item.url =  action.payload.editorAction.url
-          // if (item.image && ( action.payload.editorAction.props as any ).wAbs) {
-          //   item.image.width = ( action.payload.editorAction.props as any ).wAbs
-          //   item.image.height = ( action.payload.editorAction.props as any ).hAbs
-          // }
-          // item.editorActions = item.editorActions.map(a => ({...a, active: false}))
-          // if (item.editorActions[item.editorActions.length - 1]) {
-          //   item.editorActions[item.editorActions.length - 1].active = true
-          // }
+          if (item.image && ( action.payload.editorAction.props as ResizeProps ).wAbs) {
+            item.size.width = ( action.payload.editorAction.props as ResizeProps ).wAbs
+            item.size.height = ( action.payload.editorAction.props as ResizeProps ).hAbs
+          }
         }
       })
       .addCase(addEditorChange.rejected, (state, action) => {
         const item = state.editorItems.find(item => typeof item?.image?.id === 'number' && item?.image?.id === action.payload?.id)
         if (item) {
           item.editorActions = item.editorActions.filter(a => !!a.url)
-          //   .map(a => ({...a, active: false}))
-          // if (item.editorActions[item.editorActions.length - 1]) {
-          //   item.editorActions[item.editorActions.length - 1].active = true
-          // }
+          if (item.image) {
+            const {w, h} = getCurrentImageSize(state as RootState['images'], action.payload?.id || 0)
+            item.size.width = w
+            item.size.height = h
+          }
         }        
         state.error = action.error.message || "Failed to fetch images.";
       })
 
-      // remover last history item
+      // Remove last history item
       .addCase(DeleteLastEditorHistoryItem.fulfilled, (state, action) => {
         const item = state.editorItems.find(item => typeof item?.image?.id === 'number' && item?.image?.id === action.payload)
         if (item) {
           item.editorActions.length = item.editorActions.length - 1
           item.url = item.editorActions[item.editorActions.length - 1]?.url || item.image?.downloadUrl || ''
+
+          if (item.image) {
+            const {w, h} = getCurrentImageSize(state as RootState['images'], action.payload)
+            console.log(w, h)
+            item.size.width = w
+            item.size.height = h
+          }
         }
       })
 
@@ -342,6 +369,11 @@ export const imageSlice = createSlice({
             return a
           })
           item.url = item.editorActions.filter(a => a.active).reverse()[0]?.url || item.image?.downloadUrl || ''
+          if (item.image) {
+            const {w, h} = getCurrentImageSize(state as RootState['images'], action.payload.id)
+            item.size.width = w
+            item.size.height = h
+          }
         }
       })
   },
@@ -349,15 +381,26 @@ export const imageSlice = createSlice({
 
 export default imageSlice.reducer;
 
+export const getCurrentImageSize = (state: RootState['images'], id: number): {w: number, h: number} => {
+  const editorItem = state.editorItems.find(item => typeof item?.image?.id === 'number' && item?.image?.id === id)
+  const resizeActions = (editorItem?.editorActions || [])
+    .filter(action => action.type === EditorChangeType.resize).reverse()[0]?.props as ResizeProps || null
 
+  return {w: resizeActions?.wAbs || editorItem?.image?.width || 0, h: resizeActions?.hAbs || editorItem?.image?.height || 0}
+}
+
+// selector pagination
+export const selectPagination = () => (state: RootState): Pagination => state.images.pagination
 // selector for grid page
-const selectImagesApiStatus = (state: RootState) => state.images.status
-const selectImagesGrid = (state: RootState) => {
+export const selectImagesApiStatus = (state: RootState) => state.images.status
+export const selectImagesGrid = (state: RootState) => {
   const { start, end } = getStartEndIndex(state.images.pagination)
   return state.images.items.filter(item => item.index >= start && item.index < end)
 }
 export const selectGridPageData = createSelector([selectImagesGrid, selectImagesApiStatus], (items, status) => ({items, status}))
 
+// select status
+export const selectImagesApiStatusForMemo = () => selectImagesApiStatus
 
 // selector image
 export const getItemById = (id: number) => (state: RootState): ImageStoreItem|undefined => {
@@ -369,3 +412,9 @@ export const getImageUrlForCanvas = (id: number, showEdited: boolean) => (state:
   const item = state.images.items.find(item => item?.image?.id === id)
   return ((showEdited ? editorItem?.url : item?.image?.downloadUrl)) || ''
 }
+// selector editorItems
+export const getEditorItemsById = (id: number) => (state: RootState): ImageEditorStoreItem|undefined => {
+  return state.images.editorItems.find(item => item?.image?.id === id) || undefined
+}
+// is first page selector
+export const isFirstPageSelector = () => (state: RootState) => state.images.pagination.page === 1

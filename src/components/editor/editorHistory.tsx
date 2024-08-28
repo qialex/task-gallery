@@ -1,20 +1,23 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { Divider, IconButton, List, ListItemButton, ListItemText, Stack } from '@mui/material';
+import { Chip, Divider, IconButton, List, ListItemButton, ListItemText, Stack } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
-import { RootState } from '../../store';
 
-import { editorChangeTypeTitles } from '../../constants';
-import { DeleteLastEditorHistoryItem, ShangeEditorHistoryActive } from '../../slices/imageSlice';
+import { EditorChangeType } from '../../constants';
+import { DeleteLastEditorHistoryItem, getEditorItemsById, ShangeEditorHistoryActive } from '../../slices/imageSlice';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import CloseIcon from '@mui/icons-material/Close';
+import { BlurProps, EditorAction, GreyscaleProps, ResizeProps } from '../../types';
 
 export default function EditorHistory(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
-  const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
+  // editor item
+  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
+  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  // history props
   const editorActions = (editorItem?.editorActions || [])
 
   const image  = editorItem?.image;
@@ -46,6 +49,8 @@ export default function EditorHistory(props: {id: number, onClose: () => void}) 
     }
   }
 
+
+
   return (
     <Stack p={2}>
       <Stack>
@@ -60,27 +65,33 @@ export default function EditorHistory(props: {id: number, onClose: () => void}) 
               key={`${image?.id.toString()}_initial_state`}
               selected={true}
             >
-              <ListItemText primary="Initial image" />
+              <ListItemText primary={<Typography style={{  fontWeight: 'bold' }}>Original image</Typography>} />
             </ListItemButton>
 
-            {editorActions.map((editorAction, i) => 
-              <ListItemButton 
-                onClick={() => handleHistoryItemClick(image?.id, i)}
-                key={image?.id.toString() + i.toString()}
-                selected={editorAction.active}
-              >
-                <ListItemText primary={editorChangeTypeTitles[editorAction.type] } />
-                {i === editorActions.length - 1 ?
+            {editorActions.map((editorAction, i) => {
+              const textParts = editorHistoryGetDescription(editorAction)
+              return (
+                <ListItemButton 
+                  onClick={() => handleHistoryItemClick(image?.id, i)}
+                  key={image?.id.toString() + i.toString()}
+                  selected={editorAction.active}
+                >
+                  <ListItemText primary={<>
+                    {textParts.key}
+                    <Chip sx={{ml: 1}} label={textParts.value} />
+                  </>}  />
+                  
                   <IconButton 
                     onClick={handleDeleteClick}
                     edge="end" 
                     aria-label={isToDelete ? 'Delete' : 'Confirm delete'}
+                    sx={{visibility: i === editorActions.length - 1 ? 'visible' : 'hidden', ml: 1}}
                   >
                     {isToDelete ? <DeleteForeverIcon /> : <CloseIcon /> }
                   </IconButton>
-                : '' }
-              </ListItemButton>
-            )}
+                </ListItemButton>
+              )
+            })}
           </List>
         </Stack>
       </Stack>
@@ -90,4 +101,28 @@ export default function EditorHistory(props: {id: number, onClose: () => void}) 
       </Stack>
     </Stack>
   );
+}
+
+const editorHistoryGetDescription = (editorAction: EditorAction) => {
+  const textParts = {key: '', value: ''}
+
+  switch(editorAction.type) {
+    case EditorChangeType.greyscale:
+      const greyscaleProps = editorAction.props as GreyscaleProps
+      textParts.key = 'Greyscale'
+      textParts.value = `${greyscaleProps.isGreyscale ? 'Yes' : 'No'}`
+      break;
+    case EditorChangeType.blur:
+      const blurProps = editorAction.props as BlurProps
+      textParts.key = 'Blur'
+      textParts.value = `${blurProps.blur.toString()}`
+      break;
+    case EditorChangeType.resize:
+      const resizeProps = editorAction.props as ResizeProps
+      textParts.key = 'Resize'
+      textParts.value = `${resizeProps.wAbs.toString()}x${resizeProps.hAbs.toString()}`
+      break;
+  }
+
+  return textParts
 }

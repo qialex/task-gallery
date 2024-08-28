@@ -1,10 +1,13 @@
 import { CircularProgress, Stack } from "@mui/material";
 import { useAppSelector } from "../hooks/reduxHooks";
-import { RootState } from "../store";
 import { RequestPhase } from "../constants";
+import { useMemo } from "react";
+import { selectImagesApiStatusForMemo } from "../slices/imageSlice";
 
 export default function PageLoading () {
-  const { status } = useAppSelector((state: RootState) => state.images);
+  // status
+  const selectImagesApiStatusMemo = useMemo(() => selectImagesApiStatusForMemo(), [])
+  const status = useAppSelector(selectImagesApiStatusMemo);
 
   return (
     <>

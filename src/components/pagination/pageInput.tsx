@@ -1,14 +1,16 @@
 import { TextField } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { RootState } from "../../store";
-import { setPagination } from "../../slices/imageSlice";
-import { ChangeEvent, useEffect, useState } from "react";
+import { selectPagination, setPagination } from "../../slices/imageSlice";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { parseNumValue } from "../../utils";
 import { PAGINATION_PAGE_MIN } from "../../constants";
 
 export default function PageInput () {
   const dispatch = useAppDispatch();
-  const pagination = useAppSelector((state: RootState) => state.images.pagination);
+  // pagination
+  const selectPaginationMemo = useMemo(() => selectPagination(), [])
+  const pagination = useAppSelector(selectPaginationMemo);
+  
   const [value, setValue] = useState<string>(pagination.page.toString());
 
   // set value if page changed

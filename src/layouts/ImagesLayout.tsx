@@ -1,16 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
 import { parseNumValue } from "../utils";
 import NavPagination from "../components/nav/NavPagination";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { RootState } from "../store";
 import { Stack } from "@mui/material";
-import { setPagination } from "../slices/imageSlice";
+import { selectPagination, setPagination } from "../slices/imageSlice";
 import { Pagination } from "../types";
 
 const ImagesLayout = () => {
   const dispatch = useAppDispatch();
-  const { pagination } = useAppSelector((state: RootState) => state.images);
+  // pagination
+  const selectPaginationMemo = useMemo(() => selectPagination(), [])
+  const pagination = useAppSelector(selectPaginationMemo);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const prevRef = useRef<{state: Pagination, url: Pagination}>();
 

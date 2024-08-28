@@ -3,34 +3,48 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Checkbox, Divider, FormControl, FormControlLabel, FormGroup, InputAdornment, Stack, TextField } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
-import { RootState } from '../../store';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { parseNumValue } from '../../utils';
 import { ResizeProps } from '../../types';
 import { EDITOR_SIZE_MAX_PERCENT, EDITOR_SIZE_MAX_PX, EDITOR_SIZE_MIN_PERCENT, EDITOR_SIZE_MIN_PX, EditorChangeType, resizePropsInitial } from '../../constants';
-import { addEditorChange } from '../../slices/imageSlice';
+import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
+import { showNotificationNoChanges } from '../../slices/notificationSlice';
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 
 export default function EditorResize(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
-  const editorItem = useAppSelector((state: RootState) => state.images.editorItems.find(item => item?.image?.id === id));
-  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.resize).reverse()[0]?.props as ResizeProps
+  // editor item
+  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
+  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  // history props
+  const currentSize = editorItem?.size || {width: 0, height: 0}
 
-  const image  = editorItem?.image;
+  const maxPercent = {
+    w: Math.floor(( EDITOR_SIZE_MAX_PX / (editorItem?.size.width  || 0) ) * 100), 
+    h: Math.floor(( EDITOR_SIZE_MAX_PX / (editorItem?.size?.height || 0) ) * 100),
+  }
+
   const [form, setForm] = React.useState<ResizeProps>(
-    historyProps ? 
-    {...historyProps} :
-    {...resizePropsInitial, w: (image?.width || 0).toString(), h: (image?.height || 0).toString()}
+    {...resizePropsInitial, w: (currentSize.width || 0).toString(), h: (currentSize.height || 0).toString(), wAbs: (currentSize.width || 0), hAbs: (currentSize.height || 0),}
   )
+
+  const beforeSetForm = (newValues: ResizeProps): void => {
+    newValues.wAbs = form.isPercentage ? Math.round((currentSize.width  || 0) * parseInt(newValues.w) / 100) || currentSize.width  : parseInt(newValues.w);
+    newValues.hAbs = form.isPercentage ? Math.round((currentSize.height || 0) * parseInt(newValues.h) / 100) || currentSize.height : parseInt(newValues.h);
+
+    setForm(newValues)
+  }
 
   const handleCheckboxChange = (key: keyof ResizeProps): void => {
     const newValues = {...form, [key]: !form[key]}
     if (key === 'isPercentage') {
-      newValues.w = Math.round( !form[key] ? parseInt(form.w) / (image?.width  || 0) * 100 : (image?.width  || 0) * parseInt(form.w) / 100).toString()
-      newValues.h = Math.round( !form[key] ? parseInt(form.h) / (image?.height || 0) * 100 : (image?.height || 0) * parseInt(form.h) / 100).toString()
+      newValues.w = Math.round( !form[key] ? parseInt(newValues.w) / (currentSize.width  || 0) * 100 : (currentSize.width  || 0) * parseInt(newValues.w) / 100).toString()
+      newValues.h = Math.round( !form[key] ? parseInt(newValues.h) / (currentSize.height || 0) * 100 : (currentSize.height || 0) * parseInt(newValues.h) / 100).toString()
     }
-    setForm(newValues)
+
+    beforeSetForm(newValues)
   }
 
   const handleArrowsClickChange = (key: keyof ResizeProps, n: number): void => {
@@ -43,15 +57,15 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
     const secondKey = key === 'w' ? 'h' : 'w';
 
     if (newValue) {
-      const newValueNorm = Math.max(Math.min(parseInt(newValue), form.isPercentage ? EDITOR_SIZE_MAX_PERCENT : EDITOR_SIZE_MAX_PX), form.isPercentage ? EDITOR_SIZE_MIN_PERCENT : EDITOR_SIZE_MIN_PX)
+      const newValueNorm = Math.max(Math.min(parseInt(newValue), form.isPercentage ? Math.min(EDITOR_SIZE_MAX_PERCENT, maxPercent[firstKey]) : EDITOR_SIZE_MAX_PX), form.isPercentage ? EDITOR_SIZE_MIN_PERCENT : EDITOR_SIZE_MIN_PX)
       newValues[firstKey] = newValueNorm.toString()
       if (form.isAspect) {
         if (form.isPercentage) {
           const step1 = parseInt(form[secondKey]) + newValueNorm - parseInt(form[key].toString());
-          const step2 = step1 ? Math.max(Math.min(step1, EDITOR_SIZE_MAX_PERCENT), EDITOR_SIZE_MIN_PERCENT) : newValueNorm || ''
+          const step2 = step1 ? Math.max(Math.min(step1, Math.min(EDITOR_SIZE_MAX_PERCENT, maxPercent[secondKey])), EDITOR_SIZE_MIN_PERCENT) : newValueNorm || ''
           newValues[secondKey] = step2.toString()
         } else {
-          const aspectRatio = image?.width && image.height ? (key === 'w' ? image.width / image.height : image.height / image.width) : 1
+          const aspectRatio = currentSize.width && currentSize.height ? (key === 'w' ? currentSize.width / currentSize.height : currentSize.height / currentSize.width) : 1
           const step1 = Math.round(parseInt(form[secondKey]) + (newValueNorm - parseInt(form[key].toString())) / aspectRatio)
           const step2 = step1 ? Math.max(Math.min(step1, EDITOR_SIZE_MAX_PX), EDITOR_SIZE_MIN_PX) : newValueNorm || ''
           newValues[secondKey] = step2.toString()
@@ -60,8 +74,7 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
     } else if (form.isAspect) {
       newValues[secondKey] = newValue
     }
-
-    setForm(newValues)
+    beforeSetForm(newValues)
   }
 
   // handle user change
@@ -72,7 +85,7 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
   // handle blur as submit
   const handleBlur = (key: keyof ResizeProps): void => {
     if (!form[key]) {
-      calculateFinalValue(key, (form.isPercentage ? '100' : (image ? image[key === 'w' ? 'width' : 'height'] : 0)).toString())
+      calculateFinalValue(key, (form.isPercentage ? '100' : (currentSize[key === 'w' ? 'width' : 'height'] || 0)).toString())
     }
   }
 
@@ -83,10 +96,11 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
 
   // handle submit
   const handleSubmit = () => {
-    if (editorItem) {
-      form.wAbs = form.isPercentage ? Math.round((image?.width  || 0) * parseInt(form.w) / 100) : parseInt(form.w);
-      form.hAbs = form.isPercentage ? Math.round((image?.height || 0) * parseInt(form.h) / 100) : parseInt(form.h);
-      
+    if (editorItem && editorItem?.image) {
+      if (form.wAbs === editorItem.size.width && form.hAbs === editorItem.size.height) {
+        dispatch(showNotificationNoChanges());
+        return
+      }
       dispatch(
         addEditorChange({
           editorItem: editorItem, 
@@ -106,9 +120,14 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
   return (
     <Stack p={2}>
       <Stack>
-        <Typography gutterBottom variant="h5" component="div">
-          Resize
-        </Typography>
+        <Stack direction={'row'} justifyContent={'space-between'}>
+          <Typography gutterBottom variant="h5" component="div">
+            Resize
+          </Typography>
+          <Typography variant="caption" gutterBottom sx={{ display: 'block', mt: 1 }}>
+            Max size: {EDITOR_SIZE_MAX_PX}px
+          </Typography>
+        </Stack>
         <Stack sx={{ width: '100%' }}>
           <Stack direction={'row'}>
             <FormControl component="fieldset">
@@ -147,6 +166,7 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
               // size='small'
               value={form.w}
               onChange={(e) => handleInputChange('w', e?.target?.value || '')}
+              onKeyUp={(e) => handleInputChange('w', (e?.target as HTMLInputElement)?.value || '')}
               onBlur={() => handleBlur('w')}
               // label="Width" 
               variant="outlined" 
@@ -176,6 +196,7 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
               value={form.h}
               // size='small'
               onChange={(e) => handleInputChange('h', e?.target?.value || '')}
+              onKeyUp={(e) => handleInputChange('h', (e?.target as HTMLInputElement)?.value || '')}
               onBlur={() => handleBlur('h')}
               // label="Height" 
               variant="outlined" 
@@ -197,6 +218,26 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
               />
           </Stack>  
         </Stack>
+      </Stack>
+      <Divider sx={{mt: 4}} />
+      <Stack sx={{ width: '100%', mt: 3 }}>
+        <Typography gutterBottom variant="h6" component="div">
+          Result
+        </Typography>
+        <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
+          <Typography sx={{width: '40%'}} variant='body1'>Width (px)</Typography>
+          <Typography sx={{width: '25%'}} variant='body1'>{currentSize.width}</Typography>
+          <ArrowRightAltIcon sx={{width: '10%'}} />
+          <Typography sx={{justifyContent: 'end', display: 'flex', width: '25%'}} variant='body1'>{form.wAbs}</Typography>
+        </Stack>
+        <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
+          <Typography sx={{width: '40%'}} variant='body1'>Height (px)</Typography>
+          <Typography sx={{width: '25%'}} variant='body1'>{currentSize.height}</Typography>
+          <ArrowRightAltIcon sx={{width: '10%'}} />
+          <Typography sx={{justifyContent: 'end', display: 'flex', width: '25%'}} variant='body1'>{form.hAbs}</Typography>
+        </Stack>
+
+
       </Stack>
       <Divider sx={{mt: 4}} />
       <Stack direction={'row'} justifyContent={'end'} spacing={1} mt={3}>
