@@ -21,6 +21,7 @@ import FilterBAndWIcon from '@mui/icons-material/FilterBAndW';
 import FilterTiltShiftIcon from '@mui/icons-material/FilterTiltShift';
 import EditorHistory from "../components/editor/editorHistory";
 import { ImagesCard } from "../components/image/ImageCard";
+import { blue, deepOrange, deepPurple, green, grey } from "@mui/material/colors";
 
 export default function SingleImagePage() {
   const { id } = useParams();
@@ -113,7 +114,7 @@ export default function SingleImagePage() {
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
                       <Link component={ReactRouterLink} to={backUrl}>
-                        <Avatar>
+                        <Avatar sx={{ bgcolor: blue[500] }}>
                           <ReplyIcon />
                         </Avatar>
                       </Link>
@@ -127,7 +128,7 @@ export default function SingleImagePage() {
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Avatar onClick={() => downloadURI(imgUrl, image.id.toString())}>
+                      <Avatar sx={{ bgcolor: deepPurple[500] }} onClick={() => downloadURI(imgUrl, image.id.toString())}>
                         <DownloadIcon />
                       </Avatar>
                       <Box onClick={() => downloadURI(imgUrl, image.id.toString())} sx={{overflow: 'hidden'}}>
@@ -142,7 +143,7 @@ export default function SingleImagePage() {
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Avatar onClick={() => setIsHistoryForm(!isHistoryForm)}>
+                      <Avatar sx={{ bgcolor: green[500] }} onClick={() => setIsHistoryForm(!isHistoryForm)}>
                         <FormatListNumberedIcon />
                       </Avatar>
                       <Box onClick={() => setIsHistoryForm(!isHistoryForm)} sx={{overflow: 'hidden'}}>
@@ -153,7 +154,7 @@ export default function SingleImagePage() {
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Avatar onClick={() => setIsResizeForm(!isResizeForm)}>
+                      <Avatar sx={{ bgcolor: deepOrange[500] }} onClick={() => setIsResizeForm(!isResizeForm)}>
                         <AspectRatioIcon />
                       </Avatar>
                       <Box onClick={() => setIsResizeForm(!isResizeForm)} sx={{overflow: 'hidden'}}>
@@ -164,7 +165,7 @@ export default function SingleImagePage() {
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Avatar onClick={() => setIsGreyscalseForm(!isGreyscalseForm)}>
+                      <Avatar sx={{ bgcolor: deepOrange[500] }} onClick={() => setIsGreyscalseForm(!isGreyscalseForm)}>
                         <FilterBAndWIcon />
                       </Avatar>
                       <Box onClick={() => setIsGreyscalseForm(!isGreyscalseForm)} sx={{overflow: 'hidden'}}>
@@ -175,7 +176,7 @@ export default function SingleImagePage() {
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Avatar onClick={() => setIsBlurForm(!isBlurForm)}>
+                      <Avatar sx={{ bgcolor: deepOrange[500] }} onClick={() => setIsBlurForm(!isBlurForm)}>
                         <FilterTiltShiftIcon />
                       </Avatar>
                       <Box onClick={() => setIsBlurForm(!isBlurForm)} sx={{overflow: 'hidden'}}>
@@ -186,10 +187,11 @@ export default function SingleImagePage() {
                   <Grid item xs={12}>
                     <Divider />
                   </Grid>
+
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
                       <Link component={ReactRouterLink} to={image?.url || ''}>
-                        <Avatar variant="square">
+                        <Avatar sx={{ bgcolor: grey[500] }} variant="square">
                           <img
                             src='./unsplash_logo.png'
                             width={32}
