@@ -184,10 +184,20 @@ export const addEditorChange =  createAsyncThunk<{editorAction: EditorAction, ed
       (payload.editorAction.props as GreyscaleProps).isGreyscale :
       ((editorActions || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps)?.isGreyscale || false
     
-      // const resizeActions: EditorAction[] = (editorActions || []).filter(h => h.type === EditorChangeType.resize) || []
-
     if ([EditorChangeType.blur, EditorChangeType.greyscale].includes(payload.editorAction.type)) {
       payload.editorAction.url = getURL(payload.editorItem?.image?.downloadUrl || '', blur, greyscale)
+      const resizeActions: EditorAction[] = (editorActions || []).filter(h => h.type === EditorChangeType.resize) || []
+      if (resizeActions.length) {
+        try {
+          let url = payload.editorAction.url
+          for (let i=0; i < resizeActions.length; i++) {
+            url = await resizeImage(url, resizeActions[i].props as ResizeProps)
+          }
+          payload.editorAction.url = url
+        } catch (e) {
+          return rejectWithValue({id: payload?.editorItem?.image?.id, error: 'Some error during resize restore from ground'});
+        }
+      }
     }
 
     if (EditorChangeType.resize === payload.editorAction.type) {
@@ -353,7 +363,6 @@ export const imageSlice = createSlice({
 
           if (item.image) {
             const {w, h} = getCurrentImageSize(state as RootState['images'], action.payload)
-            console.log(w, h)
             item.size.width = w
             item.size.height = h
           }

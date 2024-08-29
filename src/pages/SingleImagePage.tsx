@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { getEditorItemsById, getImage, selectImagesApiStatusForMemo, selectPagination } from "../slices/imageSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { Stack, Drawer, Grid, Card, CardContent, Avatar, Box, Typography, Link } from "@mui/material";
+import { Stack, Drawer, Grid, Card, CardContent, Avatar, Box, Typography, Link, Divider } from "@mui/material";
 import { ImageItem, ImageStoreItem } from "../types";
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import EditorResize from "../components/editor/editorResize";
@@ -112,26 +112,6 @@ export default function SingleImagePage() {
                 <Grid component='div' container spacing={2}>
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
-                      <Link component={ReactRouterLink} to={image?.url || ''}>
-                        <Avatar variant="square">
-                          <img
-                            src='./unsplash_logo.png'
-                            width={32}
-                            height={32}
-                            alt='Ansplash logo' 
-                          />
-                        </Avatar>
-                      </Link>
-                      <Box sx={{overflow: 'hidden'}}>
-                        <Link component={ReactRouterLink} to={image?.url || ''} sx={{overflow: 'hidden'}}>
-                          <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>See on unsplash.com</Typography>
-                        </Link>
-                      </Box>
-                    </Stack>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
                       <Link component={ReactRouterLink} to={backUrl}>
                         <Avatar>
                           <ReplyIcon />
@@ -156,8 +136,9 @@ export default function SingleImagePage() {
                     </Stack>
                   </Grid>
 
-
-                  {/* <Divider/> */}
+                  <Grid item xs={12}>
+                    <Divider />
+                  </Grid>
 
                   <Grid item xs={12}>
                     <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
@@ -199,6 +180,28 @@ export default function SingleImagePage() {
                       </Avatar>
                       <Box onClick={() => setIsBlurForm(!isBlurForm)} sx={{overflow: 'hidden'}}>
                         <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>Blur</Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{cursor: 'pointer'}}>
+                      <Link component={ReactRouterLink} to={image?.url || ''}>
+                        <Avatar variant="square">
+                          <img
+                            src='./unsplash_logo.png'
+                            width={32}
+                            height={32}
+                            alt='Ansplash logo' 
+                          />
+                        </Avatar>
+                      </Link>
+                      <Box sx={{overflow: 'hidden'}}>
+                        <Link component={ReactRouterLink} to={image?.url || ''} sx={{overflow: 'hidden'}}>
+                          <Typography sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}>See on unsplash.com</Typography>
+                        </Link>
                       </Box>
                     </Stack>
                   </Grid>
