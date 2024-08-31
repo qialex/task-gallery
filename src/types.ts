@@ -1,5 +1,18 @@
 import { EditorChangeType, ImageApiStatus } from "./constants"
 
+// grid entities
+export type GridIndex = {
+  index: number,
+  imageId: number|undefined,
+  apiStatus: ImageApiStatus,
+}
+
+// size
+export type Size = {
+  width: number,
+  height: number,
+}
+
 // Pagination params
 export type Pagination = {
   page: number,
@@ -7,31 +20,25 @@ export type Pagination = {
 }
 
 // Image base props
-export interface ImageItemBase {
-  width: number
-  height: number
+export interface ImageBase {
   author: string
   url: string
 }
 
 // Image DTO
-export interface ImageItemDTO extends ImageItemBase {
+export interface ImageDTO extends ImageBase, Size {
   id: string
   download_url: string
 }
 
 // Image for inner use
-export interface ImageItem extends ImageItemBase {
+export interface Image extends ImageBase {
   id: number
   downloadUrl: string
+  size: Size
 }
 
-export interface ImageStoreItem {
-  index: number,
-  image: ImageItem|undefined,
-  status: ImageApiStatus,
-}
-
+// editor action props
 export interface EditorAction {
   type: EditorChangeType,
   props: ResizeProps|GreyscaleProps|BlurProps,
@@ -39,13 +46,11 @@ export interface EditorAction {
   active: boolean,
 }
 
-export interface ImageEditorStoreItem extends Omit<ImageStoreItem, 'index'> {
+export interface ImageEditorStoreItem {
+  image: Image,
   editorActions: EditorAction[],
   url: string,
-  size: {
-    width: number,
-    height: number,
-  },
+  size: Size,
 }
 
 export interface ResizeProps {

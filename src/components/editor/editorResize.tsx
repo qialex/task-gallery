@@ -8,22 +8,22 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { parseNumValue } from '../../utils';
 import { ResizeProps } from '../../types';
 import { EDITOR_SIZE_MAX_PERCENT, EDITOR_SIZE_MAX_PX, EDITOR_SIZE_MIN_PERCENT, EDITOR_SIZE_MIN_PX, EditorChangeType, resizePropsInitial } from '../../constants';
-import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
 import { showNotificationNoChanges } from '../../slices/notificationSlice';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import { addEditorChange, getImageEditorById } from '../../slices/imageEditorSlice';
 
 export default function EditorResize(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   // editor item
-  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
-  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  const getImageEditorByIdMemo = React.useMemo(() => getImageEditorById(id), [id])
+  const editorImage = useAppSelector(getImageEditorByIdMemo)
   // history props
-  const currentSize = editorItem?.size || {width: 0, height: 0}
+  const currentSize = editorImage?.size || {width: 0, height: 0}
 
   const maxPercent = {
-    w: Math.floor(( EDITOR_SIZE_MAX_PX / (editorItem?.size.width  || 0) ) * 100), 
-    h: Math.floor(( EDITOR_SIZE_MAX_PX / (editorItem?.size?.height || 0) ) * 100),
+    w: Math.floor(( EDITOR_SIZE_MAX_PX / (editorImage?.size.width  || 0) ) * 100), 
+    h: Math.floor(( EDITOR_SIZE_MAX_PX / (editorImage?.size?.height || 0) ) * 100),
   }
 
   const [form, setForm] = React.useState<ResizeProps>(
@@ -96,14 +96,14 @@ export default function EditorResize(props: {id: number, onClose: () => void}) {
 
   // handle submit
   const handleSubmit = () => {
-    if (editorItem && editorItem?.image) {
-      if (form.wAbs === editorItem.size.width && form.hAbs === editorItem.size.height) {
+    if (editorImage && editorImage?.image) {
+      if (form.wAbs === editorImage.size.width && form.hAbs === editorImage.size.height) {
         dispatch(showNotificationNoChanges());
         return
       }
       dispatch(
         addEditorChange({
-          editorItem: editorItem, 
+          editorItem: editorImage, 
           editorAction: {
             type: EditorChangeType.resize, 
             props: {...form},

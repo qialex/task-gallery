@@ -1,22 +1,24 @@
 import { useEffect, useMemo } from "react";
 import { Button, Grid, Stack } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
-import { getImages, selectGridPageData } from "../slices/imageSlice";
-import { ImageStoreItem } from "../types";
-import { ImageApiStatus, RequestPhase } from "../constants";
+import { GridIndex } from "../types";
+import { ImageApiStatus } from "../constants";
 import CachedIcon from '@mui/icons-material/Cached';
 import NotFound from "./NotFound";
 import { ImagesCard } from "../components/image/ImageCard";
-import PageLoading from "../components/loading";
+import { selectImagesGrid } from "../slices/imagesGridSlice";
+import { getImages } from "../slices/api/ApiSlice";
 
-export default function GridImagesPage () {
-  const selectGridPageDataMemo = useMemo(() => selectGridPageData, [])
-  const { items, status } = useAppSelector(selectGridPageDataMemo)
+
+export default function ImagesGridPage () {
+  const selectImagesGridMemo = useMemo(selectImagesGrid, [])
+  const gridIndexes = useAppSelector(selectImagesGridMemo)
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(getImages())
-  }, [items, dispatch]);
+  }, [gridIndexes, dispatch]);
 
   const handleReloadClick = () => {
     dispatch(getImages())
@@ -25,7 +27,7 @@ export default function GridImagesPage () {
   return (
     <>
       {/* Errors on the page */}
-      {items.find(item => item.status === ImageApiStatus.error) ? <>
+      {gridIndexes.find((gridIndex: GridIndex) => gridIndex.apiStatus === ImageApiStatus.error) ? <>
         <Stack alignItems={'center'} justifyContent={'center'} sx={{padding:10}}>        
           <Button 
             startIcon={<CachedIcon fontSize="large" />} 
@@ -40,18 +42,16 @@ export default function GridImagesPage () {
       </> : ''}
 
       {/* Empty page */}
-      {items.every(item => item.status === ImageApiStatus.doensExist) && status !== RequestPhase.loading ? <> 
+      {(gridIndexes || []).length && gridIndexes.every((gridIndex: GridIndex) => gridIndex.apiStatus === ImageApiStatus.doensExist) ? <> 
         <NotFound />
       </> : ''}
-      {/* Loading */}
-      <PageLoading />
 
       {/* Normal grid page */}
       <Grid container spacing={2}>
-        {items.map((item: ImageStoreItem, i: number) => 
+        {gridIndexes.map((gridIndex: GridIndex, i: number) => 
           {
-            return <Grid item key={(item.image?.id || '').toString() + i.toString()} xs={12} sm={6} md={4} lg={3} xl={2}>
-              {ImageApiStatus.loaded === item.status ? <ImagesCard item={item} enableHeaderLinks={true} enableBottomActions={true} /> : ''}
+            return <Grid item key={gridIndex.index.toString() + i.toString()} xs={12} sm={6} md={4} lg={3} xl={2}>
+              {typeof gridIndex.imageId === 'number' ? <ImagesCard id={gridIndex.imageId} enableHeaderLinks={true} enableBottomActions={true} /> : ''}
             </Grid>;
           }
         )}

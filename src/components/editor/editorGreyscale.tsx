@@ -5,18 +5,20 @@ import { Checkbox, Divider, FormControl, FormControlLabel, FormGroup, Stack } fr
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { GreyscaleProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
 import { showNotificationNoChanges } from '../../slices/notificationSlice';
+import { addEditorChange, getImageEditorById } from '../../slices/imageEditorSlice';
 
 export default function EditorGreyscale(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   // editor item
-  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
-  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  const getImageEditorByIdMemo = React.useMemo(() => getImageEditorById(id), [id])
+  const editorImage = useAppSelector(getImageEditorByIdMemo)
   // history props
-  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps
+  // history props
+  const historyProps = (editorImage?.editorActions || []).filter(h => h.type === EditorChangeType.greyscale).reverse()[0]?.props as GreyscaleProps
   const [grayscale, setGrayscale] = React.useState<boolean>(historyProps?.isGreyscale || false);
+
 
   const handleCheckboxChange = (): void => {
     setGrayscale(!grayscale)
@@ -27,14 +29,14 @@ export default function EditorGreyscale(props: {id: number, onClose: () => void}
   }
 
   const handleSubmit = () => {
-    if (editorItem) {
+    if (editorImage) {
       if ((!historyProps?.isGreyscale && !grayscale) || (!!historyProps?.isGreyscale === grayscale)) {
         dispatch(showNotificationNoChanges());
         return 
       }
       dispatch(
         addEditorChange({
-          editorItem: editorItem, 
+          editorItem: editorImage, 
           editorAction: {
             type: EditorChangeType.greyscale, 
             props: { isGreyscale: grayscale },

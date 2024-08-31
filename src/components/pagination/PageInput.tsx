@@ -1,9 +1,9 @@
 import { TextField } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { selectPagination, setPagination } from "../../slices/imageSlice";
+import { selectPagination, setPagination } from "../../slices/imagesGridSlice";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { parseNumValue } from "../../utils";
-import { PAGINATION_PAGE_MIN } from "../../constants";
+import { PAGINATION_PAGE_MIN, PaginationChangeType } from "../../constants";
 
 export default function PageInput () {
   const dispatch = useAppDispatch();
@@ -22,7 +22,7 @@ export default function PageInput () {
     // if we have new value displatch, 
     // otherwise set current page as value and not dispatch
     if (value) {
-      dispatch(setPagination({page: parseInt(value)}));
+      dispatch(setPagination({pageChangeType: PaginationChangeType.changePage, page: parseInt(value)}));
     } else {
       setValue(pagination.page.toString())
     }

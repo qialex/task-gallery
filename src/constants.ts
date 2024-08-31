@@ -1,6 +1,7 @@
 import { Pagination, ResizeProps } from "./types"
 
-export const LOCAL_STORAGE_ITEMS_PER_PAGE_KEY = "LOCAL_STORAGE_ITEMS_PER_PAGE_KEY"
+export const LOCAL_STORAGE_PAGINATION_LIMIT_KEY = "LOCAL_STORAGE_PAGINATION_LIMIT_KEY"
+export const LOCAL_STORAGE_PAGINATION_PAGE_KEY = "LOCAL_STORAGE_PAGINATION_PAGE_KEY"
 
 export const defaultPagination: Pagination = {
   page: 1,
@@ -21,9 +22,12 @@ export const PAGINATION_PAGE_MIN: number = 1
 
 
 export enum PaginationChangeType {
-  firstPage = "firstPage",
-  nextPage = "nextPage",
-  previousPage = "previousPage",
+  firstPage     = "firstPage",
+  nextPage      = "nextPage",
+  previousPage  = "previousPage",
+  changeLimit   = "changeLimit",
+  changePage    = "changePage",
+  changeAll     = "changeAll",
 }
 
 export enum ImageApiStatus {

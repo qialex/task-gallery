@@ -1,17 +1,17 @@
 import { MenuItem, Select, SelectChangeEvent, Stack } from "@mui/material";
-import { PAGINATION_LIMIT_ITEMS } from "../../constants";
+import { PAGINATION_LIMIT_ITEMS, PaginationChangeType } from "../../constants";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { selectPagination, setPagination } from "../../slices/imageSlice";
+import { selectPagination, setPagination } from "../../slices/imagesGridSlice";
 import { useMemo } from "react";
 
 export default function LimitSelect () {
   const dispatch = useAppDispatch();
   // pagination
-  const selectPaginationMemo = useMemo(() => selectPagination(), [])
+  const selectPaginationMemo = useMemo(() => selectPagination(), []);
   const pagination = useAppSelector(selectPaginationMemo);
 
   const handleChange = (e: SelectChangeEvent<number>) => {
-    dispatch(setPagination({limit: parseInt(e.target.value as string)}));
+    dispatch(setPagination({pageChangeType: PaginationChangeType.changeLimit, limit: parseInt(e.target.value as string)}));
   }
 
   const items = [...PAGINATION_LIMIT_ITEMS]

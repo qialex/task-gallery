@@ -1,4 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { RootState } from "../store";
+
+export const notificationKey = "notification"
 
 export enum NotificationType {
   Success = "success",
@@ -22,7 +25,7 @@ const initialState = {
 };
 
 const notificationSlice = createSlice({
-  name: "notification",
+  name: notificationKey,
   initialState,
   reducers: {
     showNotification: (state, action: PayloadAction<ShowNotification>) => {
@@ -44,3 +47,5 @@ const notificationSlice = createSlice({
 
 export const { showNotification, hideNotification, showNotificationNoChanges } = notificationSlice.actions;
 export default notificationSlice.reducer;
+
+export const selectNotifications = () => (state: RootState) => state[notificationKey]

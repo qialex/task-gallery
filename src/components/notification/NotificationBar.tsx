@@ -2,10 +2,8 @@ import * as React from "react";
 import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import { useAppSelector } from "../../hooks/reduxHooks";
-import { hideNotification } from "../../slices/notificationSlice";
-import { useAppDispatch } from "../../hooks/reduxHooks";
-import { RootState } from "../../store";
+import { useAppSelector, useAppDispatch } from "../../hooks/reduxHooks";
+import { hideNotification, selectNotifications } from "../../slices/notificationSlice";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -16,7 +14,10 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 
 const NotificationBar = () => {
   const dispatch = useAppDispatch();
-  const { open, message, type } = useAppSelector((state: RootState) => state.notification);
+
+  // pagination
+  const selectNotificationsMemo = React.useMemo(selectNotifications, []);
+  const { open, message, type } = useAppSelector(selectNotificationsMemo);
 
   const handleClose = (
     event?: React.SyntheticEvent | Event,

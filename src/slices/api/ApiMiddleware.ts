@@ -2,7 +2,7 @@ import { Middleware } from "@reduxjs/toolkit";
 import {
   showNotification,
   NotificationType,
-} from "../slices/notificationSlice";
+} from "../notificationSlice";
 
 export const axiosMiddleware: Middleware =
   ({ dispatch }) =>
@@ -17,15 +17,6 @@ export const axiosMiddleware: Middleware =
               message: errorMessage,
             })
           );
-        } else if (action.type.endsWith("/fulfilled")) {
-          // const successMessage = action.payload?.message || "Sucess!";
-          // dispatch(
-          //   showNotification({
-          //     type: NotificationType.Success,
-          //     message: successMessage,
-          //   })
-          // );
-        }
-
+        } 
         return next(action);
       };

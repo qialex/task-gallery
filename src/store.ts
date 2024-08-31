@@ -1,12 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
-import notificationReducer from "./slices/notificationSlice";
-import imageSlice from "./slices/imageSlice";
-import { axiosMiddleware } from "./api/middleware";
+import notificationReducer, { notificationKey } from "./slices/notificationSlice";
+import imageSlice, { imagesKey } from "./slices/imageSlice";
+import { axiosMiddleware } from "./slices/api/ApiMiddleware";
+import apiSlice, { apiKey } from "./slices/api/ApiSlice";
+import imagesGrid, { imagesGridKey } from "./slices/imagesGridSlice";
+import imageEditorSlice, { imagesEditorKey } from "./slices/imageEditorSlice";
 
 const store = configureStore({
   reducer: {
-    images: imageSlice,
-    notification: notificationReducer,
+    [imagesEditorKey]: imageEditorSlice,
+    [imagesGridKey]: imagesGrid,
+    [apiKey]: apiSlice,
+    [notificationKey]: notificationReducer,
+    [imagesKey]: imageSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(axiosMiddleware),

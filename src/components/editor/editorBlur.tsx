@@ -5,7 +5,7 @@ import { Divider, Slider, Stack } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 import { BlurProps } from '../../types';
 import { EditorChangeType } from '../../constants';
-import { addEditorChange, getEditorItemsById } from '../../slices/imageSlice';
+import { addEditorChange, getImageEditorById } from '../../slices/imageEditorSlice';
 import BlurLinearIcon from '@mui/icons-material/BlurLinear';
 import { showNotificationNoChanges } from '../../slices/notificationSlice';
 
@@ -13,10 +13,11 @@ export default function EditorBlur(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   // editor item
-  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
-  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  const getImageEditorByIdMemo = React.useMemo(() => getImageEditorById(id), [id])
+  const editorImage = useAppSelector(getImageEditorByIdMemo)
+
   // history props
-  const historyProps = (editorItem?.editorActions || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps
+  const historyProps = (editorImage?.editorActions || []).filter(h => h.type === EditorChangeType.blur).reverse()[0]?.props as BlurProps
   const [blur, setBlur] = React.useState<number>(historyProps?.blur || 0);
 
   const handleBlur = (e: Event) => {
@@ -28,14 +29,14 @@ export default function EditorBlur(props: {id: number, onClose: () => void}) {
   }
 
   const handleSubmit = () => {
-    if (editorItem) {
+    if (editorImage) {
       if ((!historyProps?.blur && !blur) || ((historyProps?.blur || 0) === blur)) {
         dispatch(showNotificationNoChanges());
         return 
       }
       dispatch(
         addEditorChange({
-          editorItem: editorItem, 
+          editorItem: editorImage, 
           editorAction: {
             type: EditorChangeType.blur, 
             props: { blur },

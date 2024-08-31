@@ -8,7 +8,7 @@ import { getItemById, getImageUrlForCanvas } from "../../slices/imageSlice";
 export function ImagesCanvas (props: {id: number, showEdited?: boolean, width?: string|number, height?: string|number}) {
   const { id, showEdited, width, height } = props;
   const getItemByIdMemo = useMemo(() => getItemById(id), [id])
-  const item = useAppSelector(getItemByIdMemo)
+  const image = useAppSelector(getItemByIdMemo)
 
   const getImageUrlForCanvasMemo = useMemo(() => getImageUrlForCanvas(id, !!showEdited), [id, showEdited])
   const imgUrl = useAppSelector(getImageUrlForCanvasMemo)
@@ -44,7 +44,7 @@ export function ImagesCanvas (props: {id: number, showEdited?: boolean, width?: 
         height={height}
         src={isVisibleAlready ? imgUrl : ''}
         onLoad={onloadImage}
-        alt={item?.image?.author || ''} 
+        alt={image?.author || ''} 
         style={{lineHeight: 0, display: isImageVisible ? 'block' : 'none', width, height}}
       />
       <Stack

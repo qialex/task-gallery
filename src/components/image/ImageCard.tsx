@@ -2,35 +2,42 @@ import { Avatar, Button, Card, CardActions, CardHeader, IconButton, Typography, 
 import { Link as ReactRouterLink } from 'react-router-dom';
 import { red } from "@mui/material/colors";
 import DownloadIcon from '@mui/icons-material/Download';
-import { ImageItem, ImageStoreItem } from "../../types";
+import { Image, Size } from "../../types";
 import { downloadURI } from "../../utils";
 import { ImagesCanvas } from "./ImageCanvas";
+import { useMemo } from "react";
+import { getItemById } from "../../slices/imageSlice";
+import { useAppSelector } from "../../hooks/reduxHooks";
+import UnsplashLogo from "../UnsplashIcon";
 
 export function ImagesCard (props: {
-  item: ImageStoreItem, 
-  size?: {width: number, height: number}, 
+  id: number, 
+  size?: Size, 
   hideImage?: boolean, 
   enableHeaderLinks?: boolean,
   enableBottomActions?: boolean,
   elevation?: number,
 }) {
-  const { item, hideImage, enableHeaderLinks, enableBottomActions, size, elevation } = props;
-  const image = item.image as ImageItem
+  const { id, hideImage, enableHeaderLinks, enableBottomActions, size, elevation } = props;
+  // image
+  const getItemByIdMemo = useMemo(() => getItemById(id), [id])
+  const image: Image|undefined = useAppSelector(getItemByIdMemo)
 
   // download image
   const handleDownloadClick = () => {
-    downloadURI(image.downloadUrl, image.id.toString())
+    downloadURI(image?.downloadUrl || '', (image?.id || '').toString())
   }
 
   return (
-    <Card elevation={typeof elevation === 'number' ? elevation : 1}>
-      {item.image ? <>
+    <Card elevation={typeof elevation === 'number' ? elevation : 1} >
+      {image ? <>
         <CardHeader
           sx={{
             '& .MuiCardHeader-content': {
               display: 'block',
               overflow: 'hidden',
             },
+            padding: {xs: 1, md: 2}
           }}
           avatar={
             <Link component={enableHeaderLinks ? ReactRouterLink : 'div'} to={`image/${image.id}`} underline="none">
@@ -58,7 +65,7 @@ export function ImagesCard (props: {
             color={'inherit'}
             sx={{ overflow: 'hidden', display: 'block', textWrap: 'nowrap', textOverflow: 'ellipsis' }}
           >
-            ID: {image.id}. Resolution: {size ? size.width : image.width}x{size ? size.height : image.height}
+            ID: {image.id}. Resolution: {size ? size.width : image.size.width}x{size ? size.height : image.size.height}
           </Link>} 
         />
 
@@ -84,11 +91,7 @@ export function ImagesCard (props: {
             <Button
               color={'inherit'}
               component={Link}
-              startIcon={<img
-                src='./unsplash_logo.png'
-                width={16}
-                height={16}
-                alt='Ansplash logo' />}
+              startIcon={<UnsplashLogo width={16} height={16} />}
               size="small"
               href={image.url}
               sx={{ overflow: 'hidden', display: 'flex', justifyContent: 'start', }}

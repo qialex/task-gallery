@@ -4,10 +4,11 @@ import { parseNumValue } from "../utils";
 import NavPagination from "../components/nav/NavPagination";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { Stack } from "@mui/material";
-import { selectPagination, setPagination } from "../slices/imageSlice";
+import { selectPagination, setPagination } from "../slices/imagesGridSlice";
 import { Pagination } from "../types";
+import { defaultPagination, PaginationChangeType } from "../constants";
 
-const ImagesLayout = () => {
+const ImagesGridLayout = () => {
   const dispatch = useAppDispatch();
   // pagination
   const selectPaginationMemo = useMemo(() => selectPagination(), [])
@@ -35,18 +36,21 @@ const ImagesLayout = () => {
     } 
     // set state
     if (
-      searchPage && 
-      searchLimit && 
       prevRef?.current?.url?.page && 
       (
         searchPage !== prevRef.current.url.page || 
         searchLimit !== prevRef.current.url.limit 
       )
     ) {
-      dispatch(setPagination({page: searchPage, limit: searchLimit}))
+      dispatch(setPagination({
+        pageChangeType: PaginationChangeType.changeAll, 
+        page: searchPage || defaultPagination.page, 
+        limit: searchLimit || defaultPagination.limit
+      }));
     }
-    // set url state iinitial
+    // set url state initial
     if (!searchPage || !searchLimit) {
+      // dispatch(setPagination({pageChangeType: PaginationChangeType.firstPage}));
       setSearchParams({page: pagination.page.toString(), limit: pagination.limit.toString()})
     }
 
@@ -61,4 +65,4 @@ const ImagesLayout = () => {
   );
 };
 
-export default ImagesLayout;
+export default ImagesGridLayout;

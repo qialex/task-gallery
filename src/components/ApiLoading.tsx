@@ -1,18 +1,17 @@
 import { CircularProgress, Stack } from "@mui/material";
 import { useAppSelector } from "../hooks/reduxHooks";
-import { RequestPhase } from "../constants";
 import { useMemo } from "react";
-import { selectImagesApiStatusForMemo } from "../slices/imageSlice";
+import { selectApiStatusLoading } from "../slices/api/ApiSlice";
 
-export default function PageLoading () {
+export default function ApiLoading () {
   // status
-  const selectImagesApiStatusMemo = useMemo(() => selectImagesApiStatusForMemo(), [])
-  const status = useAppSelector(selectImagesApiStatusMemo);
+  const selectApiStatusLoadingMemo = useMemo(() => selectApiStatusLoading(), [])
+  const isLoading = useAppSelector(selectApiStatusLoadingMemo);
 
   return (
     <>
       {/* Loading */}
-      {status === RequestPhase.loading ? <>
+      {isLoading ? <>
         <Stack justifyContent={'center'} alignItems={'center'} sx={{p: 4, minHeight: '80vh'}}>
           <CircularProgress />
         </Stack>

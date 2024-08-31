@@ -5,22 +5,22 @@ import { Chip, Divider, IconButton, List, ListItemButton, ListItemText, Stack } 
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks';
 
 import { EditorChangeType } from '../../constants';
-import { DeleteLastEditorHistoryItem, getEditorItemsById, ShangeEditorHistoryActive } from '../../slices/imageSlice';
 
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import CloseIcon from '@mui/icons-material/Close';
 import { BlurProps, EditorAction, GreyscaleProps, ResizeProps } from '../../types';
+import { getImageEditorById, DeleteLastEditorHistoryItem, ShangeEditorHistoryActive } from '../../slices/imageEditorSlice';
 
 export default function EditorHistory(props: {id: number, onClose: () => void}) {
   const dispatch = useAppDispatch();
   const { id } = props;
   // editor item
-  const getEditorItemsByIdMemo = React.useMemo(() => getEditorItemsById(id), [id])
-  const editorItem = useAppSelector(getEditorItemsByIdMemo)
+  const getImageEditorByIdMemo = React.useMemo(() => getImageEditorById(id), [id])
+  const editorImage = useAppSelector(getImageEditorByIdMemo)
   // history props
-  const editorActions = (editorItem?.editorActions || [])
+  const editorActions = (editorImage?.editorActions || [])
 
-  const image  = editorItem?.image;
+  const image  = editorImage?.image;
   
   const [isToDelete, setIsToDelete] = React.useState<boolean>(false)
 

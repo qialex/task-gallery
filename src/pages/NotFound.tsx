@@ -3,10 +3,6 @@ import { Link as ReactRouterLink } from 'react-router-dom';
 
 const NotFound = () => {
   const urlReferrer = document.referrer
-  const searchParams = new URLSearchParams(window.location.search)
-  const urlHost = new URL (window.location.origin)
-  searchParams.set('page', '1')
-  urlHost.search = searchParams.toString()
  
   return (
     <Stack padding={20} justifyContent={'center'} alignItems={'center'}>
@@ -22,15 +18,15 @@ const NotFound = () => {
         <Link 
           sx={{mt: 1}}
           component={ReactRouterLink} 
-          to={urlHost.href}
+          to={'/'}
         >
-          {urlHost.href}
+          Gallery page
         </Link>  
       </Stack>
-      {urlReferrer && urlReferrer !== urlHost.href ? 
+      {urlReferrer ? 
         <Stack justifyContent={'center'} alignItems={'center'} sx={{mt: 4}}>
           <Typography variant="body1">
-            Previous page: 
+            Some useful links: 
           </Typography>
           <Link 
             sx={{mt: 1}}
