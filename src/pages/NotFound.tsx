@@ -13,7 +13,7 @@ const NotFound = () => {
       </Stack>
       <Stack justifyContent={'center'} alignItems={'center'} sx={{mt: 4}}>
         <Typography variant="body1">
-          First page: 
+          Some useful links: 
         </Typography>
         <Link 
           sx={{mt: 1}}
@@ -26,7 +26,7 @@ const NotFound = () => {
       {urlReferrer ? 
         <Stack justifyContent={'center'} alignItems={'center'} sx={{mt: 4}}>
           <Typography variant="body1">
-            Some useful links: 
+            Previous page: 
           </Typography>
           <Link 
             sx={{mt: 1}}

@@ -230,21 +230,20 @@ export default function ImageEditorPage() {
           </Stack>
         </Grid>
         <Grid item xs={10} sm={10} md={10} lg={10} xl={10} sx={{maxWidth: 'min(calc(100% - 3.5rem), 83.3333%);'}}>
-        {image ? <>
-
-          {/* <Stack direction={'row'}> */}
-            <Stack justifyContent={'center'} alignItems={'center'} sx={{padding: {xs: 1, md: 3, lg: 6}, paddingTop: {xs: 1, md: 4, lg: 9, xl: 12}}}>
-              <Stack sx={{maxWidth: {xs: '100%', md: '70vw', lg: '40vw'}, maxHeight: {xs: '100%', md: '70vh', lg: '40vh'}}}>
-                <ImagesCanvas 
-                  id={image.id}
-                  showEdited={true}
-                />                  
+          {imgUrl && image?.id ? <>
+            {/* <Stack direction={'row'}> */}
+              <Stack justifyContent={'center'} alignItems={'center'} sx={{padding: {xs: 1, md: 3, lg: 6}, paddingTop: {xs: 1, md: 4, lg: 9, xl: 12}}}>
+                <Stack sx={{maxWidth: {xs: '100%', md: '70vw', lg: '40vw'}, maxHeight: {xs: '100%', md: '70vh', lg: '40vh'}}}>
+                  <ImagesCanvas 
+                    id={image.id}
+                    showEdited={true}
+                  />                  
+                </Stack>
               </Stack>
-            </Stack>
-          {/* </Stack> */}
-        </> : <>
-          <NotFound />
-        </>}
+            {/* </Stack> */}
+          </> : <>
+            <NotFound />
+          </>}
         </Grid>
       </Grid>
     </>

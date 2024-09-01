@@ -155,10 +155,10 @@ export default imageEditorSlice.reducer;
 // get image size
 export const getCurrentImageSize = (editorImage: ImageEditorStoreItem, id: number): Size => {
   const resizeActions = (editorImage.editorActions || [])
-    .filter(action => action.type === EditorChangeType.resize)
+    .filter(action => action.type === EditorChangeType.resize && action.active)
     .reverse()[0]?.props as ResizeProps || null
 
-  return { width: resizeActions?.wAbs || editorImage?.size?.width || 0, height: resizeActions?.hAbs || editorImage?.size?.height || 0 }
+  return { width: resizeActions?.wAbs || editorImage?.image?.size?.width || 0, height: resizeActions?.hAbs || editorImage?.image?.size?.height || 0 }
 }
 
 // selector image
